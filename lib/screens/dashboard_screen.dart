@@ -7,6 +7,7 @@ import '../config/theme.dart';
 import '../widgets/metric_card.dart';
 import '../widgets/loading_overlay.dart';
 import '../widgets/user_avatar.dart';
+import '../services/safety_tips_service.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({Key? key}) : super(key: key);
@@ -16,6 +17,10 @@ class DashboardScreen extends StatefulWidget {
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
+  final SafetyTipsService _safetyTipsService = SafetyTipsService();
+  SafetyTip? _safetyTip;
+  bool _isLoadingTip = false;
+
   @override
   void initState() {
     super.initState();
@@ -24,7 +29,30 @@ class _DashboardScreenState extends State<DashboardScreen> {
       if (user != null) {
         context.read<WaspasProvider>().loadHistory(user.uid);
       }
+      _loadSafetyTip();
     });
+  }
+
+  void _loadSafetyTip() async {
+    if (!mounted) return;
+    setState(() {
+      _isLoadingTip = true;
+    });
+    try {
+      final tip = await _safetyTipsService.fetchDailySafetyTip();
+      if (mounted) {
+        setState(() {
+          _safetyTip = tip;
+          _isLoadingTip = false;
+        });
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(() {
+          _isLoadingTip = false;
+        });
+      }
+    }
   }
 
   @override
@@ -39,8 +67,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
     final history = waspasProvider.history;
     final totalSeleksi = history.length;
-    final alternatifTerbaik = history.isNotEmpty && history.first.rankings.isNotEmpty
-        ? history.first.alternatives[history.first.rankings.first.alternativeIndex].name
+    final alternatifTerbaik =
+        history.isNotEmpty && history.first.rankings.isNotEmpty
+        ? history
+              .first
+              .alternatives[history.first.rankings.first.alternativeIndex]
+              .name
         : '-';
 
     return Scaffold(
@@ -124,6 +156,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       ),
       body: RefreshIndicator(
         onRefresh: () async {
+          _loadSafetyTip();
           await waspasProvider.loadHistory(user.uid);
         },
         child: SingleChildScrollView(
@@ -176,20 +209,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             ],
                           ),
                         ),
-                        UserAvatar(
-                          user: user,
-                          radius: 24,
-                          iconSize: 20,
-                        ),
+                        UserAvatar(user: user, radius: 24, iconSize: 20),
                       ],
                     ),
                   ],
                 ),
               ),
-              
+
               // Body Content
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 16.0),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20.0,
+                  vertical: 16.0,
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -221,8 +253,123 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         ),
                       ),
                     ),
-                    
+
                     const SizedBox(height: 4),
+
+                    // Tips K3 Hari Ini (REST API Integration)
+                    if (_isLoadingTip && _safetyTip == null)
+                      const Padding(
+                        padding: EdgeInsets.only(bottom: 24),
+                        child: Center(child: CircularProgressIndicator()),
+                      )
+                    else if (_safetyTip != null) ...[
+                      Container(
+                        margin: const EdgeInsets.only(bottom: 24),
+                        padding: const EdgeInsets.all(18),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              Colors.white,
+                              AppColors.teal.withValues(alpha: 0.05),
+                            ],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                          borderRadius: BorderRadius.circular(20),
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppColors.teal.withValues(alpha: 0.08),
+                              blurRadius: 12,
+                              offset: const Offset(0, 6),
+                            ),
+                          ],
+                          border: Border.all(
+                            color: AppColors.teal.withValues(alpha: 0.2),
+                            width: 1.5,
+                          ),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Row(
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.all(6),
+                                      decoration: BoxDecoration(
+                                        color: AppColors.teal.withValues(
+                                          alpha: 0.1,
+                                        ),
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: const Icon(
+                                        Icons.lightbulb_outline_rounded,
+                                        color: AppColors.teal,
+                                        size: 20,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    const Text(
+                                      'K3LT Safety Quote',
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.bold,
+                                        color: AppColors.teal,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                if (_isLoadingTip)
+                                  const SizedBox(
+                                    width: 16,
+                                    height: 16,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      valueColor: AlwaysStoppedAnimation<Color>(
+                                        AppColors.teal,
+                                      ),
+                                    ),
+                                  )
+                                else
+                                  GestureDetector(
+                                    onTap: _loadSafetyTip,
+                                    child: const Icon(
+                                      Icons.refresh_rounded,
+                                      color: AppColors.teal,
+                                      size: 20,
+                                    ),
+                                  ),
+                              ],
+                            ),
+                            const SizedBox(height: 12),
+                            Text(
+                              '"${_safetyTip!.quote}"',
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontStyle: FontStyle.italic,
+                                color: AppColors.deep,
+                                height: 1.4,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Align(
+                              alignment: Alignment.bottomRight,
+                              child: Text(
+                                '— ${_safetyTip!.author}',
+                                style: const TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColors.textSecondary,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
 
                     // Aksi Cepat (Quick Actions)
                     const Text(
@@ -271,7 +418,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         ),
                       ],
                     ),
-                    
+
                     const SizedBox(height: 28),
 
                     // Recent History (Riwayat Terakhir)
@@ -288,18 +435,25 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           ),
                         ),
                         TextButton.icon(
-                          onPressed: () => Navigator.pushNamed(context, '/history'),
-                          icon: const Icon(Icons.arrow_forward_rounded, size: 16),
+                          onPressed: () =>
+                              Navigator.pushNamed(context, '/history'),
+                          icon: const Icon(
+                            Icons.arrow_forward_rounded,
+                            size: 16,
+                          ),
                           label: const Text('Lihat Semua'),
                           style: TextButton.styleFrom(
                             foregroundColor: AppColors.teal,
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 8,
+                            ),
                           ),
                         ),
                       ],
                     ),
                     const SizedBox(height: 8),
-                    
+
                     if (waspasProvider.isLoading)
                       const Padding(
                         padding: EdgeInsets.symmetric(vertical: 32.0),
@@ -307,7 +461,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       )
                     else if (history.isEmpty)
                       Container(
-                        padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 20),
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 40,
+                          horizontal: 20,
+                        ),
                         width: double.infinity,
                         decoration: BoxDecoration(
                           color: Colors.white,
@@ -323,12 +480,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         ),
                         child: Column(
                           children: [
-                            Icon(Icons.folder_open_rounded, size: 48, color: AppColors.textDisabled),
+                            Icon(
+                              Icons.folder_open_rounded,
+                              size: 48,
+                              color: AppColors.textDisabled,
+                            ),
                             const SizedBox(height: 12),
                             const Text(
                               'Belum ada riwayat perhitungan.\nMulai seleksi baru sekarang.',
                               textAlign: TextAlign.center,
-                              style: TextStyle(color: AppColors.textMuted, height: 1.4),
+                              style: TextStyle(
+                                color: AppColors.textMuted,
+                                height: 1.4,
+                              ),
                             ),
                           ],
                         ),
@@ -340,9 +504,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         itemCount: history.length > 5 ? 5 : history.length,
                         itemBuilder: (context, index) {
                           final item = history[index];
-                          final topRank = item.rankings.isNotEmpty ? item.rankings.first : null;
-                          final topAltName = topRank != null ? item.alternatives[topRank.alternativeIndex].name : 'N/A';
-                          
+                          final topRank = item.rankings.isNotEmpty
+                              ? item.rankings.first
+                              : null;
+                          final topAltName = topRank != null
+                              ? item.alternatives[topRank.alternativeIndex].name
+                              : 'N/A';
+
                           return Card(
                             margin: const EdgeInsets.only(bottom: 12),
                             elevation: 2,
@@ -351,20 +519,37 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             ),
                             child: ListTile(
                               leading: CircleAvatar(
-                                backgroundColor: AppColors.mint.withValues(alpha: 0.15),
-                                child: const Icon(Icons.stars_rounded, color: AppColors.mintDark),
+                                backgroundColor: AppColors.mint.withValues(
+                                  alpha: 0.15,
+                                ),
+                                child: const Icon(
+                                  Icons.stars_rounded,
+                                  color: AppColors.mintDark,
+                                ),
                               ),
                               title: Text(
                                 item.title,
-                                style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.deep),
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColors.deep,
+                                ),
                               ),
-                              subtitle: Text('Terbaik: $topAltName', style: const TextStyle(color: AppColors.textSecondary)),
-                              trailing: const Icon(Icons.chevron_right_rounded, color: AppColors.teal),
+                              subtitle: Text(
+                                'Terbaik: $topAltName',
+                                style: const TextStyle(
+                                  color: AppColors.textSecondary,
+                                ),
+                              ),
+                              trailing: const Icon(
+                                Icons.chevron_right_rounded,
+                                color: AppColors.teal,
+                              ),
                               onTap: () {
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) => HistoryDetailScreen(item: item),
+                                    builder: (context) =>
+                                        HistoryDetailScreen(item: item),
                                   ),
                                 );
                               },
@@ -382,7 +567,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildActionCard(BuildContext context, String title, IconData icon, Color color, VoidCallback onTap) {
+  Widget _buildActionCard(
+    BuildContext context,
+    String title,
+    IconData icon,
+    Color color,
+    VoidCallback onTap,
+  ) {
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(16),
