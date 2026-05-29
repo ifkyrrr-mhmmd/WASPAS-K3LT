@@ -1,141 +1,127 @@
-# SPK WASPAS K3LT
+# Aplikasi Sistem Pendukung Keputusan WASPAS - K3LT
 
-**Sistem Pendukung Keputusan Seleksi Kepala Divisi K3LT**  
-*Menggunakan Metode WASPAS (Weighted Aggregated Sum Product Assessment)*
+Sistem Pendukung Keputusan (SPK) untuk pemilihan divisi K3LT (Kesehatan, Keselamatan Kerja, Lingkungan, dan Ketertiban) menggunakan metode **WASPAS (Weighted Aggregated Sum Product Assessment)**. Aplikasi ini dibangun menggunakan Laravel, Tailwind CSS, dan Alpine.js.
 
-> Dibuat oleh **Kelompok 2** — Teknik Informatika  
-> Mata Kuliah: Sistem Pendukung Keputusan / Mobile Programming
+## Prasyarat (Requirements)
 
----
-
-## 📱 Tentang Aplikasi
-
-Aplikasi mobile Android untuk membantu proses seleksi Kepala Divisi K3LT (Keselamatan, Kesehatan Kerja, Lingkungan, dan Transportasi) menggunakan metode WASPAS yang menggabungkan SAW (Simple Additive Weighting) dan WP (Weighted Product).
-
-### Rumus WASPAS
-```
-Qi = λ × Q1(SAW) + (1 - λ) × Q2(WP)
-
-Dimana:
-  Q1 = Σ (rij × wj)     — Simple Additive Weighting
-  Q2 = Π (rij ^ wj)     — Weighted Product
-  rij = nilai ternormalisasi
-  wj  = bobot kriteria
-```
+Sebelum menjalankan aplikasi ini, pastikan laptop Anda sudah terinstal:
+1. **PHP** (minimal versi 8.1)
+2. **Composer** (untuk instalasi library PHP)
+3. **Node.js & NPM** (untuk kompilasi Tailwind CSS dan aset frontend)
+4. **MySQL / MariaDB** (bisa menggunakan XAMPP, Laragon, dsb.)
+5. **Git** (opsional, untuk kloning repositori)
 
 ---
 
-## ✨ Fitur
+## Langkah-Langkah Menjalankan Project (Untuk Anggota Kelompok)
 
-- 🔐 **Autentikasi** — Login/Register dengan Firebase Auth
-- 📊 **Dashboard** — Ringkasan statistik dan riwayat perhitungan
-- 🧮 **Kalkulator WASPAS** — Input kriteria, bobot, alternatif, dan hitung perangkingan
-- 🏭 **Template K3LT** — Template kriteria bawaan khusus domain K3LT
-- ⚙️ **Konfigurasi Lambda** — Atur bobot antara SAW dan WP
-- 📈 **Analisis Sensitivitas** — Uji sensitivitas terhadap perubahan lambda dan bobot
-- 💾 **Simpan & Riwayat** — Data tersimpan di Firebase Firestore
-- 📄 **Export PDF** — Cetak laporan hasil seleksi dalam format PDF
-- 📝 **Audit Trail** — Catatan riwayat aktivitas pengguna
+Jika Anda mendapatkan project ini dari GitHub atau file ZIP, ikuti langkah-langkah berikut untuk menjalankannya di laptop Anda:
 
----
+### 1. Kloning atau Ekstrak Project
+- Buka terminal/command prompt.
+- Jika menggunakan Git, jalankan:
+  ```bash
+  git clone <url-repository-github>
+  cd program-waspas-laravel
+  ```
+- Jika dari file ZIP, ekstrak folder tersebut dan buka terminal di dalam folder project.
 
-## 🛠️ Teknologi
-
-| Komponen | Teknologi |
-|----------|-----------|
-| Framework | Flutter 3.38+ |
-| Bahasa | Dart 3.10+ |
-| Database | Firebase Firestore |
-| Autentikasi | Firebase Auth |
-| State Management | Provider |
-| PDF | pdf + printing |
-| Font | Google Fonts (Inter) |
-
----
-
-## 🚀 Cara Menjalankan
-
-### Prasyarat
-- Flutter SDK 3.38+
-- Android Studio / VS Code
-- Firebase project (lihat Setup Firebase)
-
-### Setup Firebase
-1. Buat project di [Firebase Console](https://console.firebase.google.com)
-2. Aktifkan **Authentication** (Email/Password)
-3. Aktifkan **Cloud Firestore** 
-4. Download `google-services.json` dan taruh di `android/app/`
-5. Jalankan `flutterfire configure` atau setup manual
-
-### Menjalankan Aplikasi
+### 2. Install Dependensi (Library)
+Di dalam terminal project, jalankan perintah ini secara berurutan:
 ```bash
-flutter pub get
-flutter run
+composer install
+npm install
 ```
+*(Proses ini mungkin memakan waktu beberapa saat tergantung kecepatan internet)*
 
-### Build APK
+### 3. Konfigurasi Environment (`.env`)
+Laravel membutuhkan file konfigurasi. Buat copy dari file `.env.example` dan ubah namanya menjadi `.env`:
 ```bash
-flutter build apk --release
+cp .env.example .env
 ```
+*(Di Windows, Anda bisa menggunakan file explorer: copy-paste `.env.example` lalu rename menjadi `.env`)*
+
+Buka file `.env` di text editor (VS Code / Notepad) dan atur koneksi database:
+```env
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=db_waspas_k3lt
+DB_USERNAME=root
+DB_PASSWORD=
+```
+*(Sesuaikan dengan konfigurasi database di laptop Anda, misalnya di XAMPP secara default password dikosongkan).*
+
+### 4. Buat Database
+- Buka phpMyAdmin (biasanya `http://localhost/phpmyadmin`).
+- Buat database baru dengan nama sesuai yang ditulis di `.env` (contoh: `db_waspas_k3lt`).
+
+### 5. Generate Application Key dan Migrasi Database
+Jalankan perintah berikut di terminal:
+```bash
+php artisan key:generate
+php artisan migrate --seed
+```
+*(Perintah `--seed` digunakan jika Anda memiliki seeder untuk data awal, jika tidak ada cukup `php artisan migrate`)*
+
+### 6. Jalankan Server Lokal
+Anda membutuhkan 2 terminal yang berjalan secara bersamaan:
+
+**Terminal 1 (Untuk menjalankan Laravel):**
+```bash
+php artisan serve
+```
+
+**Terminal 2 (Untuk mengkompilasi Tailwind & CSS secara realtime):**
+```bash
+npm run dev
+```
+
+Sekarang, Anda bisa membuka aplikasi di browser pada alamat: **http://localhost:8000**
 
 ---
 
-## 📁 Struktur Proyek
+## Informasi Penting: Folder yang Berisiko (Jangan Di-upload ke GitHub)
 
-```
-lib/
-├── main.dart                    # Entry point
-├── config/
-│   ├── theme.dart               # App theme & colors
-│   └── routes.dart              # Route configuration
-├── models/
-│   ├── user_model.dart          # User data model
-│   ├── criteria_model.dart      # Criteria data model
-│   ├── alternative_model.dart   # Alternative data model
-│   ├── calculation_result.dart  # Calculation result model
-│   └── audit_log.dart           # Audit log model
-├── services/
-│   ├── auth_service.dart        # Firebase Auth service
-│   ├── firestore_service.dart   # Firestore CRUD service
-│   └── pdf_service.dart         # PDF export service
-├── providers/
-│   ├── auth_provider.dart       # Auth state management
-│   └── waspas_provider.dart     # WASPAS state management
-├── utils/
-│   ├── waspas_calculator.dart   # WASPAS algorithm
-│   ├── k3lt_templates.dart      # K3LT criteria templates
-│   ├── sensitivity_analysis.dart # Sensitivity analysis
-│   └── validators.dart          # Form validators
-├── screens/
-│   ├── splash_screen.dart       # Splash screen
-│   ├── login_screen.dart        # Login screen
-│   ├── register_screen.dart     # Register screen
-│   ├── dashboard_screen.dart    # Main dashboard
-│   ├── calculator/
-│   │   ├── calculator_screen.dart # Calculator main
-│   │   ├── criteria_step.dart   # Criteria input step
-│   │   ├── matrix_step.dart     # Matrix input step
-│   │   └── results_step.dart    # Results display step
-│   ├── history_screen.dart      # Calculation history
-│   ├── sensitivity_screen.dart  # Sensitivity analysis
-│   └── profile_screen.dart      # User profile
-└── widgets/
-    ├── custom_text_field.dart    # Reusable text field
-    ├── gradient_button.dart      # Gradient button
-    ├── metric_card.dart          # Metric display card
-    ├── ranking_card.dart         # Ranking result card
-    ├── bar_chart_widget.dart     # Bar chart visualization
-    └── loading_overlay.dart      # Loading overlay
-```
+Saat mengupload project Laravel ke GitHub, **TIDAK SEMUA** file dan folder boleh di-upload. Ada beberapa folder berisiko dan sensitif:
+
+1. **`vendor/`**: Berisi ribuan file library PHP hasil dari `composer install`. Ukurannya sangat besar. Cukup file `composer.json` yang di-upload, anggota lain tinggal menjalankan `composer install`.
+2. **`node_modules/`**: Sama seperti vendor, berisi library JavaScript hasil `npm install`. Jangan di-upload.
+3. **`.env`**: File paling sensitif! Berisi password database, API key, dll. Jika di-upload, kredensial Anda bisa dicuri orang. Yang di-upload hanya `.env.example` sebagai referensi.
+4. **`storage/`**: Berisi file log error (`storage/logs`), cache, dan file upload user. Biasanya tidak perlu di-upload.
+5. **`public/build/`** atau **`public/hot/`**: Hasil kompilasi Vite yang otomatis dibuat saat menjalankan `npm run dev` atau `npm run build`.
+
+**Kabar Baiknya:** Project ini sudah memiliki file `.gitignore` yang secara otomatis mengabaikan file dan folder berisiko tersebut. Pastikan Anda **TIDAK MENGHAPUS** file `.gitignore` ini.
 
 ---
 
-## 👥 Kelompok 2
+## Langkah-Langkah Upload Project ke GitHub
 
-Teknik Informatika — 2026
+Untuk mengupload project yang sudah berjalan ini ke repository bersama di GitHub:
 
----
+1. **Buat Repository Baru di GitHub** (Pilih "New Repository", beri nama, biarkan kosong tanpa README/gitignore).
+2. **Buka Terminal di dalam folder project lokal Anda.**
+3. **Inisialisasi Git (jika belum ada):**
+   ```bash
+   git init
+   ```
+4. **Tambahkan semua file (yang diizinkan oleh .gitignore):**
+   ```bash
+   git add .
+   ```
+5. **Simpan perubahan (Commit):**
+   ```bash
+   git commit -m "Initial commit: Aplikasi WASPAS K3LT"
+   ```
+6. **Hubungkan ke Repository GitHub:**
+   ```bash
+   git remote add origin <url-repository-anda.git>
+   ```
+   *(Contoh: `git remote add origin https://github.com/username/repo-name.git`)*
+7. **Upload ke GitHub (Push):**
+   ```bash
+   git branch -M main
+   git push -u origin main
+   ```
 
-## 📄 Lisensi
-
-Proyek ini dibuat untuk keperluan akademik (Tugas Akhir / Projek Akhir).
+*(Setelah ini berhasil, minta anggota kelompok Anda untuk mengikuti "Langkah-Langkah Menjalankan Project" di atas).*
