@@ -41,8 +41,12 @@ RUN apk add --no-cache nodejs npm && \
     npm install && \
     npm run build
 
+# Copy entrypoint script and make it executable
+COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
+
 # Expose port 80
 EXPOSE 80
 
-# Run supervisor
-CMD ["/usr/bin/supervisord", "-c", "/etc/supervisord.conf"]
+# Run entrypoint
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
