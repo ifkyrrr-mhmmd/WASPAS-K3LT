@@ -1,3 +1,12 @@
+---
+title: SPK WASPAS K3LT
+emoji: 🛡️
+colorFrom: indigo
+colorTo: blue
+sdk: docker
+pinned: false
+---
+
 # Aplikasi Sistem Pendukung Keputusan WASPAS - K3LT
 
 Sistem Pendukung Keputusan (SPK) untuk pemilihan divisi K3LT (Kesehatan, Keselamatan Kerja, Lingkungan, dan Ketertiban) menggunakan metode **WASPAS (Weighted Aggregated Sum Product Assessment)**. Aplikasi ini dibangun menggunakan Laravel, Tailwind CSS, dan Alpine.js.
