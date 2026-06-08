@@ -60,7 +60,7 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M5 20h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2 2v9a2 2 0 002 2z"></path>
                         </svg>
                     </div>
-                    <div class="max-w-[180px] sm:max-w-xs">
+                    <div class="min-w-0 flex-1">
                         <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Kandidat Terbaik (Terakhir)</p>
                         <p class="text-xl sm:text-2xl font-black text-gray-800 mt-1 truncate" title="{{ $alternatifTerbaik }}">
                             {{ $alternatifTerbaik }}
@@ -86,8 +86,7 @@
                 <span class="w-1.5 h-6 rounded-full bg-[#4E8D9C]"></span>
                 Aksi Cepat
             </h3>
-            
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 
                 <!-- Action 1: Kalkulator WASPAS -->
                 <a href="{{ route('calculation.index') }}" class="bg-white hover:bg-slate-50 border border-gray-100 p-5 rounded-2xl shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 flex flex-col items-center text-center group">

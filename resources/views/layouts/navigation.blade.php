@@ -1,4 +1,4 @@
-<nav x-data="{ open: false }" class="bg-white border-b border-gray-100">
+<nav x-data="{ open: false }" class="relative bg-white border-b border-gray-100 z-50">
     <!-- Primary Navigation Menu -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between h-16">
@@ -78,10 +78,30 @@
     </div>
 
     <!-- Responsive Navigation Menu -->
-    <div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden">
+    <div x-show="open"
+         x-transition:enter="transition ease-out duration-200"
+         x-transition:enter-start="opacity-0 -translate-y-2"
+         x-transition:enter-end="opacity-100 translate-y-0"
+         x-transition:leave="transition ease-in duration-150"
+         x-transition:leave-start="opacity-100 translate-y-0"
+         x-transition:leave-end="opacity-0 -translate-y-2"
+         class="absolute top-full left-0 right-0 w-full bg-white border-b border-gray-200 shadow-xl z-50 sm:hidden"
+         style="display: none;">
         <div class="pt-2 pb-3 space-y-1">
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                 {{ __('Dashboard') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('calculation.index')" :active="request()->routeIs('calculation.*')">
+                {{ __('Hitung WASPAS') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('history.index')" :active="request()->routeIs('history.*')">
+                {{ __('Riwayat') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('sensitivity.index')" :active="request()->routeIs('sensitivity.*')">
+                {{ __('Sensitivitas') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('audit.index')" :active="request()->routeIs('audit.*')">
+                {{ __('Audit Log') }}
             </x-responsive-nav-link>
         </div>
 

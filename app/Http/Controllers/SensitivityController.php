@@ -96,10 +96,10 @@ class SensitivityController extends Controller
                     }
                 }
                 
-                // Fallback: If empty, try to construct with 0
+                // Fallback: If empty, try to construct with 1 to avoid Zero-Score bug
                 if (empty($scores)) {
                     foreach ($criteria as $c) {
-                        $scores[$c['id']] = 0;
+                        $scores[$c['id']] = 1;
                     }
                 }
 
@@ -135,7 +135,7 @@ class SensitivityController extends Controller
             $alternativesArray = $dbAlternatives->map(function ($alt) use ($dbCriteria) {
                 $scores = [];
                 foreach ($dbCriteria as $c) {
-                    $scores[$c->id] = $alt->scoreFor($c->id) ?? 0;
+                    $scores[$c->id] = $alt->scoreFor($c->id) ?? 1;
                 }
                 return [
                     'id'     => $alt->id,

@@ -36,18 +36,21 @@ class CalculationController extends Controller
             ];
         });
 
+        $customTemplates = \App\Models\CustomTemplate::where('user_id', $userId)->orderBy('updated_at', 'asc')->get();
+
         try {
             $result = null;
             if ($criteria->isNotEmpty() && $alternatives->isNotEmpty()) {
                 $result = $this->calculator->calculate($userId, (float) $lambda);
             }
-            return view('calculation.index', compact('result', 'criteria', 'alternatives', 'lambda'));
+            return view('calculation.index', compact('result', 'criteria', 'alternatives', 'lambda', 'customTemplates'));
         } catch (\Exception $e) {
             return view('calculation.index', [
                 'result' => null,
                 'criteria' => $criteria,
                 'alternatives' => $alternatives,
                 'lambda' => $lambda,
+                'customTemplates' => $customTemplates,
                 'error' => $e->getMessage()
             ]);
         }
@@ -104,6 +107,8 @@ class CalculationController extends Controller
     {
         $request->validate([
             'title' => 'required|string|max:255',
+            'save_as_template' => 'nullable|boolean',
+            'template_name' => 'nullable|string|max:255',
         ]);
 
         $userId = Auth::id();
@@ -123,6 +128,37 @@ class CalculationController extends Controller
                     'lambda' => 0.5,
                     'result_data' => $result,
                 ]);
+
+                // Simpan sebagai template kustom jika diminta
+                if ($request->has('save_as_template') && $request->save_as_template) {
+                    $templateName = $request->template_name ?: 'Template Kustom ' . date('Y-m-d H:i');
+                    $criteriaData = array_map(function($c) {
+                        return [
+                            'name' => $c['name'],
+                            'type' => $c['type'],
+                            'weight' => $c['weight'],
+                        ];
+                    }, $result['criteria']);
+
+                    $templateCount = \App\Models\CustomTemplate::where('user_id', $userId)->count();
+                    
+                    if ($templateCount >= 2) {
+                        // Timpa template yang paling lama diperbarui
+                        $oldestTemplate = \App\Models\CustomTemplate::where('user_id', $userId)
+                                            ->orderBy('updated_at', 'asc')->first();
+                        $oldestTemplate->update([
+                            'name' => $templateName,
+                            'criteria_data' => $criteriaData,
+                        ]);
+                    } else {
+                        // Buat baru
+                        \App\Models\CustomTemplate::create([
+                            'user_id' => $userId,
+                            'name' => $templateName,
+                            'criteria_data' => $criteriaData,
+                        ]);
+                    }
+                }
 
                 AuditLog::create([
                     'user_id' => $userId,

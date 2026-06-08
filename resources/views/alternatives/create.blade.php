@@ -51,10 +51,11 @@
                                                    name="scores[{{ $c->id }}]"
                                                    id="score_{{ $c->id }}"
                                                    value="{{ old('scores.' . $c->id) }}"
+                                                   min="1"
                                                    step="0.0001"
                                                    required
                                                    class="block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm"
-                                                   placeholder="0">
+                                                   placeholder="1">
                                             @error('scores.' . $c->id)
                                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                                             @enderror
@@ -71,7 +72,7 @@
                         @endif
 
                         {{-- Tombol Aksi --}}
-                        <div class="flex items-center gap-4">
+                        <div class="flex flex-wrap items-center gap-4">
                             <button type="submit"
                                     class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 focus:bg-indigo-700 active:bg-indigo-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
                                 Simpan

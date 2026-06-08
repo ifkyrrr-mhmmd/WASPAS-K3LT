@@ -95,7 +95,20 @@
                                                         Edit
                                                     </a>
                                                     <form action="{{ route('alternatives.destroy', $alt) }}" method="POST" class="inline"
-                                                          onsubmit="return confirm('Yakin ingin menghapus alternatif ini?')">
+                                                          x-data @submit.prevent="Swal.fire({
+                                                              title: 'Konfirmasi Hapus',
+                                                              text: 'Yakin ingin menghapus alternatif ini?',
+                                                              icon: 'warning',
+                                                              showCancelButton: true,
+                                                              confirmButtonColor: '#ef4444',
+                                                              cancelButtonColor: '#9ca3af',
+                                                              confirmButtonText: 'Ya, Hapus!',
+                                                              cancelButtonText: 'Batal'
+                                                          }).then((result) => {
+                                                              if (result.isConfirmed) {
+                                                                  $el.submit();
+                                                              }
+                                                          })">
                                                         @csrf
                                                         @method('DELETE')
                                                         <button type="submit"

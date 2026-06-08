@@ -12,8 +12,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Untuk MySQL, ubah enum menjadi varchar(50)
-        DB::statement("ALTER TABLE audit_logs MODIFY COLUMN `action` VARCHAR(50) NOT NULL");
+        // Gunakan Schema Builder Laravel agar kompatibel dengan SQLite (saat testing) dan MySQL (saat hosting)
+        Schema::table('audit_logs', function (Blueprint $table) {
+            $table->string('action', 50)->change();
+        });
     }
 
     /**
@@ -21,6 +23,10 @@ return new class extends Migration
      */
     public function down(): void
     {
-        DB::statement("ALTER TABLE audit_logs MODIFY COLUMN `action` ENUM('create','update','delete','calculate','export') NOT NULL");
+        Schema::table('audit_logs', function (Blueprint $table) {
+            // Kita bisa kembalikan ke enum jika didukung, atau biarkan varchar jika down tidak terlalu kritis
+            // Untuk MySQL/SQLite, change kembali ke enum:
+            $table->enum('action', ['create', 'update', 'delete', 'calculate', 'export'])->change();
+        });
     }
 };

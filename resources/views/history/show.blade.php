@@ -21,7 +21,7 @@
                         </div>
                     </div>
                     
-                    <div class="flex items-center gap-3 w-full sm:w-auto">
+                    <div class="flex flex-wrap items-center gap-3 w-full sm:w-auto">
                         <!-- Tombol Export PDF Laporan -->
                         <a href="{{ route('history.export-pdf', $history->id) }}"
                            class="flex-1 sm:flex-none inline-flex items-center justify-center px-4 py-2 bg-indigo-50 hover:bg-indigo-100 border border-indigo-100 rounded-md font-semibold text-xs text-indigo-700 uppercase tracking-widest transition ease-in-out duration-150">
@@ -131,8 +131,8 @@
                                 <tr>
                                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Alternatif</th>
                                     @foreach ($result['criteria'] as $c)
-                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" title="{{ $c['name'] }}">
-                                            C{{ $c['id'] }} <br> <span class="text-[10px] font-normal lowercase">({{ $c['type'] }})</span>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                            {{ $c['name'] }} <br> <span class="text-[9px] font-normal lowercase">({{ $c['type'] }})</span>
                                         </th>
                                     @endforeach
                                 </tr>

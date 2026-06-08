@@ -7,8 +7,10 @@
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=inter:400,600,700,800&display=swap" rel="stylesheet" />
     <style>
+        * {
+            font-family: 'Helvetica', Arial, sans-serif;
+        }
         body {
-            font-family: 'Inter', sans-serif;
             color: #1e293b;
             background: #ffffff;
             margin: 0;
@@ -209,11 +211,11 @@
 <body>
 
     <!-- Header Table -->
-    <table class="header-table">
+    <table class="header-table" style="width: 100%; border-collapse: collapse; border-bottom: 2px solid #281C59; padding-bottom: 12px; margin-bottom: 20px;">
         <tr>
             <td style="vertical-align: top;">
-                <h1 class="header-title" style="font-family: 'Inter', sans-serif; font-weight: 800; font-size: 24px; margin: 0; color: #1e293b;">WASPAS - <span style="color:#059669;">K3LT</span></h1>
-                <p class="header-subtitle" style="margin: 5px 0 0 0; color: #64748b;">Arsip Laporan Hasil Perhitungan Kepala Divisi K3LT - Terarsip Aman di Database</p>
+                <h1 class="header-title" style="font-weight: 800; font-size: 22px; margin: 0; color: #1e293b; letter-spacing: 0.5px;">WASPAS - <span style="color:#059669;">K3LT</span></h1>
+                <p class="header-subtitle" style="margin: 4px 0 0 0; color: #64748b; font-size: 11px;">Arsip Laporan Hasil Perhitungan Kepala Divisi K3LT - Terarsip Aman di Database</p>
             </td>
         </tr>
     </table>
@@ -227,7 +229,7 @@
             <td class="value">{{ $history->created_at->translatedFormat('d F Y, H:i') }} WIB</td>
         </tr>
         <tr>
-            <td class="label">Parameter Sensitivitas (&lambda;)</td>
+            <td class="label">Parameter Lambda (Lambda)</td>
             <td class="value" colspan="3">{{ number_format($history->lambda, 2) }}</td>
         </tr>
     </table>
@@ -244,9 +246,9 @@
             </tr>
         </thead>
         <tbody>
-            @foreach($result['criteria'] as $c)
+            @foreach($result['criteria'] as $index => $c)
                 <tr>
-                    <td><strong>C{{ $c['id'] }}</strong></td>
+                    <td><strong>C{{ $index + 1 }}</strong></td>
                     <td>{{ $c['name'] }}</td>
                     <td>
                         <span class="badge {{ $c['type'] === 'Benefit' ? 'badge-benefit' : 'badge-cost' }}">
@@ -261,26 +263,44 @@
 
     <!-- 2. Matriks Ternormalisasi -->
     <h2 class="section-title">2. Hasil Normalisasi Matriks Keputusan (R)</h2>
-    <table class="data-table">
-        <thead>
-            <tr>
-                <th>Nama Alternatif / Kandidat</th>
-                @foreach($result['criteria'] as $c)
-                    <th>C{{ $c['id'] }}</th>
-                @endforeach
-            </tr>
-        </thead>
-        <tbody>
-            @foreach($result['alternatives'] as $alt)
+    @php
+        $criteriaCollection = collect($result['criteria']);
+        $criteriaChunks = $criteriaCollection->chunk(3);
+    @endphp
+
+    @foreach($criteriaChunks as $chunkIndex => $chunk)
+        @if($criteriaChunks->count() > 1)
+            <div style="font-size: 11px; font-weight: bold; color: #281C59; margin-top: 10px; margin-bottom: 5px;">
+                Bagian {{ $chunkIndex + 1 }} dari {{ $criteriaChunks->count() }}
+            </div>
+        @endif
+        <table class="data-table" style="margin-bottom: 20px;">
+            <thead>
                 <tr>
-                    <td><strong>{{ $alt['name'] }}</strong></td>
-                    @foreach($result['criteria'] as $c)
-                        <td>{{ number_format($result['normalizedMatrix'][$alt['id']][$c['id']] ?? 0, 4) }}</td>
+                    <th style="width: 25%;">Nama Alternatif / Kandidat</th>
+                    @foreach($chunk as $c)
+                        @php
+                            $index = $criteriaCollection->search(fn($item) => $item['id'] === $c['id']);
+                        @endphp
+                        <th style="font-size: 10px;">
+                            C{{ $index + 1 }}: {{ $c['name'] }} <br>
+                            <span style="font-size: 8px; font-weight: normal; text-transform: lowercase;">({{ $c['type'] }})</span>
+                        </th>
                     @endforeach
                 </tr>
-            @endforeach
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                @foreach($result['alternatives'] as $alt)
+                    <tr>
+                        <td><strong>{{ $alt['name'] }}</strong></td>
+                        @foreach($chunk as $c)
+                            <td>{{ number_format($result['normalizedMatrix'][$alt['id']][$c['id']] ?? 0, 4) }}</td>
+                        @endforeach
+                    </tr>
+                @endforeach
+            </tbody>
+        </table>
+    @endforeach
 
     <!-- 3. Hasil Perankingan -->
     <h2 class="section-title">3. Tabel Peringkat Final WASPAS (Qi)</h2>
@@ -318,7 +338,7 @@
                 <h4 class="winner-title">Rekomendasi Kandidat Terbaik</h4>
                 <h2 class="winner-name">{{ $winner['alternative_name'] }}</h2>
                 <p class="winner-desc">
-                    Berdasarkan perhitungan terintegrasi WASPAS (&lambda; = {{ number_format($history->lambda, 2) }}), kandidat di atas dinyatakan memiliki kecocokan tertinggi untuk menjabat sebagai **Kepala Divisi K3LT** dengan nilai Qi akhir sebesar **{{ number_format($winner['qi'], 4) }}**.
+                    Berdasarkan perhitungan terintegrasi WASPAS (Lambda = {{ number_format($history->lambda, 2) }}), kandidat di atas dinyatakan memiliki kecocokan tertinggi untuk menjabat sebagai **Kepala Divisi K3LT** dengan nilai Qi akhir sebesar **{{ number_format($winner['qi'], 4) }}**.
                 </p>
             </div>
         </div>

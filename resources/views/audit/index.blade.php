@@ -25,12 +25,33 @@
         @else
             <div class="bg-white rounded-3xl border border-gray-100 shadow-lg overflow-hidden">
                 <!-- Table Header -->
-                <div class="p-6 border-b border-gray-100">
+                <div class="p-6 border-b border-gray-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                     <h3 class="text-lg font-black text-slate-800 flex items-center gap-2">
                         <span class="w-1.5 h-6 rounded-full bg-[#4E8D9C]"></span>
                         Riwayat Aktivitas
                         <span class="text-sm font-medium text-slate-400 ml-2">({{ $logs->total() }} entri)</span>
                     </h3>
+                    <form action="{{ route('audit.clear') }}" method="POST" x-data @submit.prevent="Swal.fire({
+                        title: 'Hapus Semua Log?',
+                        text: 'Tindakan ini akan menghapus seluruh catatan aktivitas audit Anda secara permanen. Aksi ini tidak dapat dibatalkan.',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#ef4444',
+                        cancelButtonColor: '#94a3b8',
+                        confirmButtonText: 'Ya, Bersihkan!',
+                        cancelButtonText: 'Batal'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            $el.submit();
+                        }
+                    })">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="px-4 py-2.5 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-sm">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                            Bersihkan Semua Log
+                        </button>
+                    </form>
                 </div>
 
                 <div class="overflow-x-auto">
@@ -40,15 +61,14 @@
                                 <th class="px-6 py-4 text-left font-bold text-xs text-slate-500 uppercase tracking-wider">Waktu</th>
                                 <th class="px-6 py-4 text-left font-bold text-xs text-slate-500 uppercase tracking-wider">Aksi</th>
                                 <th class="px-6 py-4 text-left font-bold text-xs text-slate-500 uppercase tracking-wider">Deskripsi</th>
-                                <th class="px-6 py-4 text-center font-bold text-xs text-slate-500 uppercase tracking-wider">Detail</th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach($logs as $log)
                                 <tr class="border-b border-gray-50 hover:bg-slate-50/50 transition-colors">
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="text-xs font-bold text-slate-700">{{ $log->created_at->format('d M Y') }}</div>
-                                        <div class="text-xs text-slate-400">{{ $log->created_at->format('H:i:s') }}</div>
+                                        <div class="text-xs font-bold text-slate-700">{{ $log->created_at->translatedFormat('d M Y') }}</div>
+                                        <div class="text-xs text-slate-400">{{ $log->created_at->translatedFormat('H:i:s') }} WIB</div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         @php
@@ -86,16 +106,6 @@
                                             {{ $log->description }}
                                         </p>
                                     </td>
-                                    <td class="px-6 py-4 text-center">
-                                        @if($log->details)
-                                            <button x-data="{ show: false }" @click="show = !show"
-                                                class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors">
-                                                <svg class="w-4 h-4 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg> Lihat
-                                            </button>
-                                        @else
-                                            <span class="text-xs text-slate-300">—</span>
-                                        @endif
-                                    </td>
                                 </tr>
                             @endforeach
                         </tbody>
@@ -110,4 +120,23 @@
         @endif
 
     </div>
+
+    @if(session('success'))
+        @push('scripts')
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Berhasil',
+                    text: "{{ session('success') }}",
+                    timer: 3500,
+                    showConfirmButton: false,
+                    toast: true,
+                    position: 'top-end',
+                    timerProgressBar: true
+                });
+            });
+        </script>
+        @endpush
+    @endif
 </x-app-layout>

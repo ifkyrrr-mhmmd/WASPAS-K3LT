@@ -53,7 +53,7 @@ class AlternativeController extends Controller
         ];
 
         foreach ($criteria as $criterion) {
-            $rules["scores.{$criterion->id}"] = 'required|numeric|min:0';
+            $rules["scores.{$criterion->id}"] = 'required|numeric|gt:0';
         }
 
         $validated = $request->validate($rules);
@@ -121,7 +121,7 @@ class AlternativeController extends Controller
         ];
 
         foreach ($criteria as $criterion) {
-            $rules["scores.{$criterion->id}"] = 'required|numeric|min:0';
+            $rules["scores.{$criterion->id}"] = 'required|numeric|gt:0';
         }
 
         $validated = $request->validate($rules);

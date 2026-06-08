@@ -47,19 +47,34 @@
                                             {{ $history->lambda }}
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                            {{ $history->created_at->format('d M Y, H:i') }}
+                                            {{ $history->created_at->translatedFormat('d M Y, H:i') }} WIB
                                         </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-center flex justify-center gap-2">
-                                            <a href="{{ route('history.show', $history->id) }}" class="inline-flex items-center px-3 py-1 bg-green-500 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-600 active:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition ease-in-out duration-150">
-                                                Lihat
-                                            </a>
-                                            <form action="{{ route('history.destroy', $history->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus riwayat ini? Data yang dihapus tidak bisa dikembalikan.');">
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                            <div class="flex flex-wrap justify-center gap-2">
+                                                <a href="{{ route('history.show', $history->id) }}" class="inline-flex items-center px-3 py-1 bg-green-500 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-600 active:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition ease-in-out duration-150">
+                                                    Lihat
+                                                </a>
+                                            <form action="{{ route('history.destroy', $history->id) }}" method="POST" x-data @submit.prevent="Swal.fire({
+                                                title: 'Konfirmasi Hapus',
+                                                text: 'Apakah Anda yakin ingin menghapus riwayat ini? Data yang dihapus tidak bisa dikembalikan.',
+                                                icon: 'warning',
+                                                showCancelButton: true,
+                                                confirmButtonColor: '#ef4444',
+                                                cancelButtonColor: '#9ca3af',
+                                                confirmButtonText: 'Ya, Hapus!',
+                                                cancelButtonText: 'Batal'
+                                            }).then((result) => {
+                                                if (result.isConfirmed) {
+                                                    $el.submit();
+                                                }
+                                            })">
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit" class="inline-flex items-center px-3 py-1 bg-red-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-red-700 active:bg-red-800 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition ease-in-out duration-150">
                                                     Hapus
                                                 </button>
                                             </form>
+                                            </div>
                                         </td>
                                     </tr>
                                 @empty

@@ -47,20 +47,39 @@
                         </div>
                     </div>
                     
-                    <form action="{{ route('template.load') }}" method="POST" class="flex flex-wrap gap-2.5 w-full lg:w-auto">
+                    <form action="{{ route('template.load') }}" method="POST" class="flex flex-wrap gap-2.5 w-full lg:w-auto" x-data @submit.prevent="
+                        const form = $el;
+                        const submitter = $event.submitter;
+                        Swal.fire({
+                            title: 'Konfirmasi',
+                            text: 'Memuat template akan menghapus semua Kriteria dan Alternatif lama Anda. Yakin?',
+                            icon: 'warning',
+                            showCancelButton: true,
+                            confirmButtonColor: '#4f46e5',
+                            cancelButtonColor: '#9ca3af',
+                            confirmButtonText: 'Ya, Muat',
+                            cancelButtonText: 'Batal'
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                const hiddenInput = document.createElement('input');
+                                hiddenInput.type = 'hidden';
+                                hiddenInput.name = submitter.name;
+                                hiddenInput.value = submitter.value;
+                                form.appendChild(hiddenInput);
+                                form.submit();
+                            }
+                        })
+                    ">
                         @csrf
                         <button type="submit" name="template" value="ringkas"
-                                onclick="return confirm('Memuat template akan menghapus semua Kriteria dan Alternatif lama Anda. Yakin?')"
                                 class="flex-1 lg:flex-none inline-flex items-center justify-center px-4 py-2.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-100 text-xs font-bold rounded-xl transition duration-200">
                             ⚡ Template Ringkas (3C, 3A)
                         </button>
                         <button type="submit" name="template" value="standar"
-                                onclick="return confirm('Memuat template akan menghapus semua Kriteria dan Alternatif lama Anda. Yakin?')"
                                 class="flex-1 lg:flex-none inline-flex items-center justify-center px-4 py-2.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-100 text-xs font-bold rounded-xl transition duration-200">
                             <svg class="w-4 h-4 inline-block text-yellow-400" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg> Template Standar (5C, 5A)
                         </button>
                         <button type="submit" name="template" value="lengkap"
-                                onclick="return confirm('Memuat template akan menghapus semua Kriteria dan Alternatif lama Anda. Yakin?')"
                                 class="flex-1 lg:flex-none inline-flex items-center justify-center px-4 py-2.5 bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-100 text-xs font-bold rounded-xl transition duration-200">
                             <svg class="w-4 h-4 inline-block text-orange-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M12.395 2.553a1 1 0 00-1.45-.385c-.345.23-.614.558-.822.88-.214.33-.403.713-.57 1.116-.334.804-.614 1.768-.84 2.734a31.365 31.365 0 00-.613 3.58 2.64 2.64 0 01-.945-1.067c-.328-.68-.398-1.534-.398-2.654A1 1 0 005.05 6.05 6.981 6.981 0 003 11a7 7 0 1011.95-4.95c-.592-.591-.98-.985-1.348-1.467-.363-.476-.724-1.063-1.207-2.03zM12.12 15.12A3 3 0 017 13s.879.5 2.5.5c0-1 .5-4 1.25-4.5.5 1 .786 1.293 1.371 1.879A2.99 2.99 0 0113 13a2.99 2.99 0 01-.879 2.121z" clip-rule="evenodd"></path></svg> Template Lengkap (7C, 6A)
                         </button>
@@ -123,7 +142,20 @@
                                                         Edit
                                                     </a>
                                                     <form action="{{ route('criteria.destroy', $c) }}" method="POST" class="inline"
-                                                          onsubmit="return confirm('Yakin ingin menghapus kriteria ini?')">
+                                                          x-data @submit.prevent="Swal.fire({
+                                                              title: 'Konfirmasi Hapus',
+                                                              text: 'Yakin ingin menghapus kriteria ini?',
+                                                              icon: 'warning',
+                                                              showCancelButton: true,
+                                                              confirmButtonColor: '#ef4444',
+                                                              cancelButtonColor: '#9ca3af',
+                                                              confirmButtonText: 'Ya, Hapus!',
+                                                              cancelButtonText: 'Batal'
+                                                          }).then((result) => {
+                                                              if (result.isConfirmed) {
+                                                                  $el.submit();
+                                                              }
+                                                          })">
                                                         @csrf
                                                         @method('DELETE')
                                                         <button type="submit"

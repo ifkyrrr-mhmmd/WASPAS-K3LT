@@ -68,8 +68,24 @@
                             <button @click="loadPreset('lengkap')" class="px-4 py-2 bg-white hover:bg-slate-100 border border-slate-300 text-sm font-medium text-slate-700 rounded-lg transition duration-200 shadow-sm">
                                 Template Lengkap (7 Kriteria)
                             </button>
+                            @if(isset($customTemplates) && $customTemplates->count() > 0)
+                                <div class="h-6 border-l border-slate-300 mx-1 self-center"></div>
+                                @foreach($customTemplates as $ct)
+                                    <button @click="loadCustomPreset({{ $ct->id }})" class="px-4 py-2 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 text-sm font-medium text-indigo-700 rounded-lg transition duration-200 shadow-sm flex items-center gap-2">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path></svg>
+                                        {{ $ct->name }}
+                                    </button>
+                                @endforeach
+                            @endif
                         </div>
                     </div>
+                </div>
+
+                <div class="flex justify-end">
+                    <button @click="resetCalculator()" class="px-4 py-2 text-red-600 bg-red-50 hover:bg-red-100 font-medium text-sm rounded-lg transition duration-200 border border-red-200">
+                        <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                        Reset Kalkulator
+                    </button>
                 </div>
 
                 <!-- Weight Indicator Alert -->
@@ -198,13 +214,20 @@
                             <tbody class="bg-white divide-y divide-slate-100">
                                 <template x-for="(alt, aIdx) in alternatives" :key="alt.id">
                                     <tr class="hover:bg-slate-50/50">
-                                        <td class="px-6 py-4 whitespace-nowrap">
-                                            <input type="text" x-model="alt.name" 
-                                                   class="w-full bg-slate-50 hover:bg-white focus:bg-white text-sm font-bold text-slate-700 rounded-lg border-slate-200 focus:border-blue-500 focus:ring-blue-500">
+                                        <td class="px-6 py-4 whitespace-nowrap" x-data="{ focused: false }">
+                                            <div class="relative w-full">
+                                                <input type="text" x-model="alt.name" @focus="focused = true" @blur="focused = false"
+                                                       class="w-full bg-slate-50 hover:bg-white focus:bg-white text-sm font-bold text-slate-700 rounded-lg border-slate-200 focus:border-blue-500 focus:ring-blue-500">
+                                                
+                                                <div x-show="focused" x-transition.opacity
+                                                     class="absolute z-10 bottom-full left-0 mb-2 px-3 py-2 bg-slate-800 text-white text-sm font-medium rounded-lg shadow-xl whitespace-nowrap border border-slate-700 pointer-events-none"
+                                                     x-text="alt.name" x-show="alt.name.length > 0">
+                                                </div>
+                                            </div>
                                         </td>
                                         <template x-for="c in criteria" :key="c.id">
                                             <td class="px-6 py-4 whitespace-nowrap">
-                                                <input type="number" min="0" max="100" x-model.number="alt.scores[c.id]" 
+                                                <input type="number" min="1" max="100" x-model.number="alt.scores[c.id]" 
                                                        class="w-24 bg-slate-50 hover:bg-white focus:bg-white text-sm font-bold text-slate-700 rounded-lg border-slate-200 focus:border-blue-500 focus:ring-blue-500">
                                             </td>
                                         </template>
@@ -226,11 +249,17 @@
                 </div>
 
                 <!-- Step 2 Navigation Buttons -->
-                <div class="flex justify-between items-center">
-                    <button @click="step = 1" class="px-6 py-3 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold text-sm rounded-2xl transition duration-200">
-                        ← Kembali Ke Kriteria
-                    </button>
-                    <div class="flex gap-3">
+                <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
+                    <div class="flex flex-wrap justify-center gap-3 w-full sm:w-auto">
+                        <button @click="step = 1" class="px-6 py-3 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold text-sm rounded-2xl transition duration-200">
+                            ← Kembali Ke Kriteria
+                        </button>
+                        <button @click="resetCalculator()" class="px-4 py-3 text-red-600 bg-red-50 hover:bg-red-100 font-medium text-sm rounded-2xl transition duration-200 border border-red-200 flex items-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                            Reset
+                        </button>
+                    </div>
+                    <div class="flex flex-wrap justify-center gap-3 w-full sm:w-auto">
                         <a href="{{ route('dashboard') }}" class="px-6 py-3 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold text-sm rounded-2xl transition duration-200">
                             Batal
                         </a>
@@ -382,12 +411,23 @@
                         </a>
 
                         <!-- Save History Form -->
-                        <form action="{{ route('calculation.save') }}" method="POST" class="flex flex-wrap md:flex-nowrap gap-2 items-center w-full md:w-auto">
+                        <form action="{{ route('calculation.save') }}" method="POST" class="flex flex-col md:flex-row gap-4 items-start md:items-center w-full md:w-auto bg-slate-50 p-4 rounded-xl border border-slate-200" x-data="{ showTemplateInput: false }">
                             @csrf
-                            <input type="text" name="title" placeholder="Nama Riwayat (Contoh: Angkatan 2026)" required
-                                   class="text-sm text-slate-700 border-slate-300 focus:border-blue-500 focus:ring-blue-500 rounded-lg shadow-sm bg-white px-4 py-2.5">
-                            <button type="submit" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm rounded-lg transition duration-200 shadow-sm">
-                                Simpan Riwayat
+                            <div class="flex flex-col gap-2 w-full">
+                                <input type="text" name="title" placeholder="Nama Riwayat (Contoh: Angkatan 2026)" required
+                                       class="text-sm text-slate-700 border-slate-300 focus:border-blue-500 focus:ring-blue-500 rounded-lg shadow-sm bg-white px-4 py-2.5 w-full">
+                                
+                                <label class="flex items-center gap-2 cursor-pointer text-xs text-slate-600 font-medium">
+                                    <input type="checkbox" name="save_as_template" value="1" class="rounded border-slate-300 text-blue-600 focus:ring-blue-500" x-model="showTemplateInput">
+                                    Simpan rancangan kriteria ini sebagai Templat Kustom (Maks. 2)
+                                </label>
+                                
+                                <input type="text" name="template_name" placeholder="Nama Templat Kustom (Opsional)"
+                                       x-show="showTemplateInput" x-transition.opacity
+                                       class="text-xs text-slate-700 border-slate-300 focus:border-blue-500 focus:ring-blue-500 rounded-md shadow-sm bg-white px-3 py-1.5 w-full mt-1">
+                            </div>
+                            <button type="submit" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm rounded-lg transition duration-200 shadow-sm whitespace-nowrap self-stretch flex items-center justify-center">
+                                Simpan Data
                             </button>
                         </form>
                     </div>
@@ -545,6 +585,41 @@
                             Swal.fire('Sukses', data.message || 'Preset berhasil dimuat!', 'success');
                         } else {
                             Swal.fire('Error', 'Gagal memuat preset: ' + data.message, 'error');
+                        }
+                    })
+                    .catch(err => {
+                        console.error(err);
+                        Swal.fire('Error', 'Terjadi kesalahan koneksi.', 'error');
+                    })
+                    .finally(() => {
+                        this.isLoading = false;
+                    });
+                },
+
+                loadCustomPreset(templateId) {
+                    this.isLoading = true;
+                    fetch('{{ route("template.loadCustom") }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                            'Accept': 'application/json'
+                        },
+                        body: JSON.stringify({ template_id: templateId })
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            this.criteria = data.criteria.map(c => ({
+                                id: c.id,
+                                name: c.name,
+                                type: c.type,
+                                weight: parseFloat(c.weight)
+                            }));
+                            this.alternatives = []; // Template kustom hanya reset kriteria
+                            Swal.fire('Sukses', data.message || 'Template kustom berhasil dimuat!', 'success');
+                        } else {
+                            Swal.fire('Error', 'Gagal memuat template kustom: ' + data.message, 'error');
                         }
                     })
                     .catch(err => {

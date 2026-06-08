@@ -80,6 +80,70 @@ class TemplateController extends Controller
     }
 
     /**
+     * Memuat preset template Kustom milik pengguna.
+     */
+    public function loadCustom(Request $request)
+    {
+        $request->validate([
+            'template_id' => 'required|exists:custom_templates,id',
+        ]);
+
+        $userId = Auth::id();
+        $template = \App\Models\CustomTemplate::where('id', $request->template_id)
+                        ->where('user_id', $userId)->firstOrFail();
+
+        try {
+            DB::transaction(function () use ($userId, $template) {
+                // 1. Bersihkan data kriteria & alternatif lama milik user
+                $criteriaIds = Criteria::where('user_id', $userId)->pluck('id');
+                AlternativeScore::whereIn('criteria_id', $criteriaIds)->delete();
+                Criteria::where('user_id', $userId)->delete();
+                Alternative::where('user_id', $userId)->delete();
+
+                // 2. Load Kriteria dari JSON
+                $criteriaData = is_string($template->criteria_data) ? json_decode($template->criteria_data, true) : $template->criteria_data;
+                
+                foreach ($criteriaData as $c) {
+                    Criteria::create([
+                        'user_id' => $userId,
+                        'name' => $c['name'],
+                        'type' => $c['type'],
+                        'weight' => $c['weight'],
+                    ]);
+                }
+
+                // 3. Catat Audit Log
+                AuditLog::create([
+                    'user_id' => $userId,
+                    'user_name' => Auth::user()->name,
+                    'action' => 'load_custom_template',
+                    'description' => "Memuat Template Kustom: " . $template->name,
+                ]);
+            });
+
+            if ($request->expectsJson() || $request->ajax()) {
+                $criteria = Criteria::where('user_id', $userId)->orderBy('id')->get();
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Template kustom "' . $template->name . '" berhasil dimuat!',
+                    'criteria' => $criteria,
+                    'alternatives' => [] // Custom template hanya kriteria, alternatif kosong
+                ]);
+            }
+
+            return redirect()->route('calculation.index')->with('success', 'Template kustom berhasil dimuat!');
+        } catch (\Exception $e) {
+            if ($request->expectsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Gagal memuat template kustom: ' . $e->getMessage()
+                ], 500);
+            }
+            return redirect()->route('dashboard')->with('error', 'Gagal memuat template: ' . $e->getMessage());
+        }
+    }
+
+    /**
      * Template Ringkas: 4 Kriteria, 3 Kandidat
      */
     private function loadRingkasTemplate($userId)

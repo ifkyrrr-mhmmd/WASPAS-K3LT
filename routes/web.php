@@ -49,9 +49,11 @@ Route::middleware('auth')->group(function () {
 
     // Jejak Audit (Audit Trail Log)
     Route::get('/audit-logs', [AuditLogController::class, 'index'])->name('audit.index');
+    Route::delete('/audit-logs/clear', [AuditLogController::class, 'clear'])->name('audit.clear');
 
     // Template Preset K3LT
     Route::post('/template/load', [TemplateController::class, 'load'])->name('template.load');
+    Route::post('/template/load-custom', [TemplateController::class, 'loadCustom'])->name('template.loadCustom');
 });
 
 require __DIR__.'/auth.php';
