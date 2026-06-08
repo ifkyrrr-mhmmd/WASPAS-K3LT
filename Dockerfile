@@ -45,8 +45,8 @@ RUN apk add --no-cache nodejs npm && \
 COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
-# Expose port 80
-EXPOSE 80
+# Expose port 7860
+EXPOSE 7860
 
 # Run entrypoint
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
